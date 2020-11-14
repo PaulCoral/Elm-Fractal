@@ -46,11 +46,11 @@ fracPatternFromString str =
         <| String.toList str
 
 {-
-    Get a Pattern from a character
+    Get a Pattern from a character. Ignore case
 -}
 patternSymbolsFromChar : Char -> PatternSymbols
 patternSymbolsFromChar char =
-    case char of
+    case (Char.toUpper char) of
         'L' -> Left
         'R' -> Right
         'S' -> Straight
