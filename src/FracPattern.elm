@@ -13,6 +13,9 @@ type PatternSymbol
 -}
 type alias FracPattern = List PatternSymbol
 
+{-
+    An empty FracPattern (i.e. with no PatternSymbol)
+-}
 emptyFracPattern : FracPattern
 emptyFracPattern = []
 
