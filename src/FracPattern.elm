@@ -3,7 +3,7 @@ module FracPattern exposing (..)
 {-
     Represent the possible "moves" in fractal drawing
 -}
-type PatternSymbols
+type PatternSymbol
     = Straight
     | Left
     | Right
@@ -11,7 +11,7 @@ type PatternSymbols
 {-
     Represent a sequence of patterns
 -}
-type alias FracPattern = List PatternSymbols
+type alias FracPattern = List PatternSymbol
 
 emptyFracPattern : FracPattern
 emptyFracPattern = []
@@ -30,7 +30,7 @@ fracPatternToString fp =
 {-
     Convert a pattern to a String
 -}
-patternSymbolsToString : PatternSymbols -> String
+patternSymbolsToString : PatternSymbol -> String
 patternSymbolsToString sym =
     case sym of
         Straight -> "S"
@@ -48,7 +48,7 @@ fracPatternFromString str =
 {-
     Get a Pattern from a character. Ignore case
 -}
-patternSymbolsFromChar : Char -> PatternSymbols
+patternSymbolsFromChar : Char -> PatternSymbol
 patternSymbolsFromChar char =
     case (Char.toUpper char) of
         'L' -> Left
