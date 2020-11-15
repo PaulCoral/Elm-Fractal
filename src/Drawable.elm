@@ -11,8 +11,9 @@ import FracPattern exposing (..)
 type alias DrawingState =
     { currentIteration : Int
     , pattern : FracPattern
-    , points : Points
+    , lines : Lines
     }
+
 
 
 {-| Represent a position in 2D drawing space
@@ -22,10 +23,12 @@ type alias Point =
     , y : Float
     }
 
+{-| A line, presented as two ORDERED Points-}
+type alias Line = (Point, Point)
 
 {-| Represent a sequence of Points
 -}
-type alias Points = List Point
+type alias Lines = List Line
 
 
 {-| Represent a vector in 2D drawing space
@@ -86,11 +89,12 @@ lineStyle =
     ]
 
 
-{-| Create a Svg line from two points
+{-| Create a Svg line from a line
 -}
-pointPairToLine : Point -> Point -> Svg msg
-pointPairToLine pt1 pt2 =
+lineToSvgLine : Line -> Svg msg
+lineToSvgLine l =
     let
+        (pt1, pt2) = l
         startX = String.fromFloat pt1.x
         startY = String.fromFloat pt1.y
         endX = String.fromFloat pt2.x
@@ -107,35 +111,32 @@ pointPairToLine pt1 pt2 =
 
 {-| Create a sequence of Svg lines from a sequence of Points
 -}
-pointsToLines : Points -> List (Svg msg)
-pointsToLines points =
-    pointsToLinesRec points []
+linestoSvgLines : Lines -> List (Svg msg)
+linestoSvgLines lines =
+    pointsToLinesRec lines []
 
 
 {-| Create a sequence of Svg lines from a sequence of Points.
 Recursive version. takes an accumulator.
 -}
-pointsToLinesRec : Points -> List(Svg msg) -> List (Svg msg)
-pointsToLinesRec points acc =
-    case points of
+pointsToLinesRec : Lines -> List(Svg msg) -> List (Svg msg)
+pointsToLinesRec lines acc =
+    case lines of
         [] -> acc
-        [_] -> acc
-        p1 :: rest ->
-            case rest of
-                p2 :: _ ->
-                    pointsToLinesRec rest ((pointPairToLine p1 p2) :: acc)
+        line :: rest ->
+            pointsToLinesRec rest ((lineToSvgLine line) :: acc)
 
 
-{-| Takes two points and a PatternSymbol, to return a new Point.
-The first point is expected to follow the second
+{-| Takes a line and a PatternSymbol, to return a new Point.
 -}
-getNewPointFromPattern : Point -> Point -> PatternSymbol -> Point
-getNewPointFromPattern prev pt sym =
+getNewPointFromPattern : Line -> PatternSymbol -> Line
+getNewPointFromPattern line sym =
     let
+        (prev, pt) = line
         vector = pointSub pt prev
         updatedVec = updateVectorFromSymbol vector sym
     in
-        pointAdd pt updatedVec
+        (pt, (pointAdd pt updatedVec))
 
 
 {-| Get a new vector from PatternSymbol
