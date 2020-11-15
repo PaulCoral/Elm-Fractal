@@ -1,28 +1,23 @@
 module FracPattern exposing (..)
 
-import Drawable exposing (Vector)
 
-{-
-    Represent the possible "moves" in fractal drawing
+{-| Represent the possible "moves" in fractal drawing
 -}
 type PatternSymbol
     = Straight
     | Left
     | Right
 
-{-
-    Represent a sequence of patterns
+{-| Represent a sequence of patterns
 -}
 type alias FracPattern = List PatternSymbol
 
-{-
-    An empty FracPattern (i.e. with no PatternSymbol)
+{-| An empty FracPattern (i.e. with no PatternSymbol)
 -}
 emptyFracPattern : FracPattern
 emptyFracPattern = []
 
-{-
-    Convert a Sequence of Pattern to a String
+{-| Convert a Sequence of Pattern to a String
 -}
 fracPatternToString : FracPattern -> String
 fracPatternToString fp =
@@ -32,8 +27,7 @@ fracPatternToString fp =
     in
         List.foldl (++) "" sepComma
 
-{-
-    Convert a pattern to a String
+{-| Convert a pattern to a String
 -}
 patternSymbolsToString : PatternSymbol -> String
 patternSymbolsToString sym =
@@ -42,16 +36,14 @@ patternSymbolsToString sym =
         Left -> "L"
         Right -> "R"
 
-{-
-    Get a sequence of Pattern from a String
+{-| Get a sequence of Pattern from a String
 -}
 fracPatternFromString : String -> FracPattern
 fracPatternFromString str =
         List.map patternSymbolsFromChar
         <| String.toList str
 
-{-
-    Get a Pattern from a character. Ignore case
+{-| Get a Pattern from a character. Ignore case
 -}
 patternSymbolsFromChar : Char -> PatternSymbol
 patternSymbolsFromChar char =
