@@ -1,4 +1,4 @@
-module Utils exposing (listToListOfPair)
+module Utils exposing (..)
 
 {-| Takes a list a return a new list with pair of consecutive elements
 -}
@@ -16,3 +16,18 @@ listToListOfPairRec list acc =
         x :: xs ->
             case xs of
                 y :: _ -> (x,y) :: acc
+
+
+listFlatMap : (a -> List b) -> List a -> List b
+listFlatMap func list =
+    List.foldl (++) ([]) (List.map func list)
+
+
+listLast : List a -> Maybe a
+listLast list =
+    List.head (List.reverse list)
+
+
+listPutAtTheEnd : a -> List a -> List a
+listPutAtTheEnd a list =
+    List.reverse (a :: (List.reverse list))
