@@ -7,6 +7,8 @@ import Html.Events exposing (onClick, onInput)
 
 import FracPattern exposing (..)
 
+
+
 -- MAIN
 
 {-| the main function
@@ -15,8 +17,8 @@ main =
   Browser.sandbox { init = init, update = update, view = view }
 
 
-
 -- MODEL
+
 
 {-| The application model
 -}
@@ -26,6 +28,7 @@ type alias Model =
   , form : ModelForm
   }
 
+
 {-| Record of the live changes in the form
 -}
 type alias ModelForm =
@@ -33,16 +36,19 @@ type alias ModelForm =
     , nbIter : Int
     }
 
+
 {-| initialization function
 -}
 init : Model
 init = Model 0 [] (ModelForm "" 0)
+
 
 {-| Return true if the model is the one at the application start
 -}
 isStartModel : Model -> Bool
 isStartModel model =
     model.pattern == emptyFracPattern
+
 
 {-| Messages for application update
 -}
@@ -52,6 +58,7 @@ type Msg
     | RemoveIter
     | Reset
     | UpdateForm ModelForm
+
 
 {-| Update the application Model from a Msg and the current Model
 -}
@@ -68,11 +75,13 @@ update msg model =
         Reset -> init
         UpdateForm mf -> {model | form = mf}
 
+
 {-| The view of the application. Created from a Model
 -}
 view : Model -> Html Msg
 view model =
     div [] [ viewCommand model ]
+
 
 {-| Return the appropriate UI to display
 -}
@@ -82,6 +91,7 @@ viewCommand model =
         viewCommandInit model
     else
         viewCommandUpdate model
+
 
 {-| The UI at application start.
 -}
@@ -94,6 +104,7 @@ viewCommandInit model =
         , button [onClick Draw] [text "Enter"]
         , button [ onClick Reset ] [text "Reset"]
         ]
+
 
 {-| The UI to update application state
 -}
@@ -109,6 +120,7 @@ viewCommandUpdate model =
         , button [ onClick RemoveIter ] [ text "-" ]
         ]
 
+
 {-| Create Msg to update `ModelForm.pattern` from String
 -}
 updatePatternModelForm : Model -> String -> Msg
@@ -117,6 +129,7 @@ updatePatternModelForm model s =
         prevForm = model.form
     in
         UpdateForm { prevForm | pattern = s}
+
 
 {-| Create Msg to update `ModelForm.nbIter` from String
 -}

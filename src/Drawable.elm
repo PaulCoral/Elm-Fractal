@@ -5,6 +5,16 @@ import Svg.Attributes exposing (..)
 
 import FracPattern exposing (..)
 
+
+
+
+type alias DrawingState =
+    { currentIteration : Int
+    , pattern : FracPattern
+    , points : Points
+    }
+
+
 {-| Represent a position in 2D drawing space
 -}
 type alias Point =
@@ -12,9 +22,16 @@ type alias Point =
     , y : Float
     }
 
+
+{-| Represent a sequence of Points
+-}
+type alias Points = List Point
+
+
 {-| Represent a vector in 2D drawing space
 -}
 type alias Vector = Point
+
 
 {-| Rotate a vector from an angle
 -}
@@ -26,11 +43,13 @@ vectorRotate v angle =
     in
         { x = newX , y = newY }
 
+
 {-| Add two points
 -}
 pointAdd : Point -> Point -> Point
 pointAdd p1 p2 =
     Point (p1.x + p2.x) (p1.y + p2.y)
+
 
 {-| Subtract two points
 -}
@@ -38,20 +57,25 @@ pointSub : Point -> Point -> Point
 pointSub p1 p2 =
     pointAdd p1 (pointNeg p2)
 
+
 {-| Negate a point (e.g. (1,2) => (-1,-2))
 -}
 pointNeg : Point -> Point
 pointNeg p =
     Point -p.x -p.y
 
-{-| Represent a sequence of Points
--}
-type alias Points = List Point
 
 {-| The turn angle used when drawing
 -}
 turnAngle : Float
 turnAngle = 60
+
+
+{-| Size of the line drawn at Iteration 0
+-}
+initLineLength : Float
+initLineLength = 600
+
 
 {-| The style that will be applied to every line
 -}
@@ -60,6 +84,7 @@ lineStyle =
     [ stroke "blake"
     , strokeWidth "3"
     ]
+
 
 {-| Create a Svg line from two points
 -}
@@ -86,6 +111,7 @@ pointsToLines : Points -> List (Svg msg)
 pointsToLines points =
     pointsToLinesRec points []
 
+
 {-| Create a sequence of Svg lines from a sequence of Points.
 Recursive version. takes an accumulator.
 -}
@@ -99,6 +125,7 @@ pointsToLinesRec points acc =
                 p2 :: _ ->
                     pointsToLinesRec rest ((pointPairToLine p1 p2) :: acc)
 
+
 {-| Takes two points and a PatternSymbol, to return a new Point.
 The first point is expected to follow the second
 -}
@@ -109,6 +136,7 @@ getNewPointFromPattern prev pt sym =
         updatedVec = updateVectorFromSymbol vector sym
     in
         pointAdd pt updatedVec
+
 
 {-| Get a new vector from PatternSymbol
 -}
