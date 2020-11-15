@@ -5,7 +5,7 @@ import Svg.Attributes exposing (..)
 
 import FracPattern exposing (..)
 
-{-| Represet a position in 2D drawing space
+{-| Represent a position in 2D drawing space
 -}
 type alias Point =
     { x : Float
