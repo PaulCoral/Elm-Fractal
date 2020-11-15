@@ -1,5 +1,7 @@
 module FracPattern exposing (..)
 
+import Drawable exposing (Vector)
+
 {-
     Represent the possible "moves" in fractal drawing
 -}
@@ -58,3 +60,4 @@ patternSymbolsFromChar char =
         'R' -> Right
         'S' -> Straight
         _   -> Straight
+
