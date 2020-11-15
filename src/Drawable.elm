@@ -12,7 +12,7 @@ type alias Point =
     , y : Float
     }
 
-{-| Represet a vector in 2D drawing space
+{-| Represent a vector in 2D drawing space
 -}
 type alias Vector = Point
 
@@ -32,7 +32,7 @@ pointAdd : Point -> Point -> Point
 pointAdd p1 p2 =
     Point (p1.x + p2.x) (p1.y + p2.y)
 
-{-| Substract two points
+{-| Subtract two points
 -}
 pointSub : Point -> Point -> Point
 pointSub p1 p2 =
