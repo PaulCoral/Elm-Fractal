@@ -111,7 +111,12 @@ view : Model -> Html Msg
 view model =
     div
         []
-        [ viewCommand model
+        [ h1 [] [text "Elm Fractal"]
+        , p []
+            [ text "Have a look at my "
+            , a [ href "https://github.com/lepaincestbon/Elm-Fractal" ] [ text "GitHub Repo" ]
+            ]
+        , viewCommand model
         , viewDrawing model
         , br [] []
         , text "DEBUG"
