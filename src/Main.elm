@@ -92,7 +92,7 @@ update msg model =
             | nbIterations = model.nbIterations + 1
             , drawing = nextDrawingIteration model
             }
-        Reset -> init
+        Reset -> { model | drawing = init.drawing }
         UpdateForm mf -> {model | form = mf}
 
 
@@ -126,7 +126,7 @@ viewCommand model =
 viewCommandInit : Model -> Html Msg
 viewCommandInit model =
     div []
-        [ input [ type_ "text", onInput (updatePatternModelForm model) ] []
+        [ input [ type_ "text", value model.form.pattern ,onInput (updatePatternModelForm model) ] []
         , br [] []
         , button [onClick Draw] [text "Enter"]
         , button [ onClick Reset ] [text "Reset"]
@@ -143,6 +143,7 @@ viewCommandUpdate model =
         , text ("Number of iterations : " ++ (String.fromInt model.nbIterations))
         , br [] []
         , button [ onClick NextIter ] [ text "Next" ]
+        , button [ onClick Reset ] [text "Reset"]
         ]
 
 
