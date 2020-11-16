@@ -9,6 +9,7 @@ import Svg.Attributes
 
 import FracPattern exposing (..)
 import Drawable exposing (..)
+import PresetPattern exposing (presetList)
 
 
 
@@ -128,9 +129,23 @@ viewCommandInit model =
     div []
         [ input [ type_ "text", value model.form.pattern ,onInput (updatePatternModelForm model) ] []
         , br [] []
+        , viewCommandPreset model
+        , br [] []
         , button [onClick Draw] [text "Enter"]
         , button [ onClick Reset ] [text "Reset"]
         ]
+
+
+viewCommandPreset : Model -> Html Msg
+viewCommandPreset model =
+    select []
+        (List.map
+            (\preset ->
+                option [ onClick (updatePatternModelForm model preset.pattern)] [text preset.name]
+            )
+            presetList)
+        --[ option [ onClick (updatePatternModelForm model PresetPattern.snowFlake)] [ text "MandelBrot" ]
+        --]
 
 
 {-| The UI to update application state
@@ -170,3 +185,4 @@ viewDrawing model =
         , Svg.Attributes.height sizeString
         ]
         (linesToSvgLines (model.drawing.lines))
+
