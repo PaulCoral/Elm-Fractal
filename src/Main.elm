@@ -3,7 +3,7 @@ module Main exposing (main)
 import Browser
 import Html exposing (..)
 import Html.Attributes exposing (..)
-import Html.Events exposing (onClick, onInput)
+import Html.Events exposing (..)
 import Svg exposing (svg)
 import Svg.Attributes
 
@@ -149,11 +149,11 @@ viewCommandInit model =
 -}
 viewCommandPreset : Model -> Html Msg
 viewCommandPreset model =
-    select []
-        (  (option [] [text "Custom"])
+    select [ onInput (\s -> UpdateForm (ModelForm s)) ]
+        (  (option [ value model.form.pattern ] [text "Custom"])
         :: (List.map
             (\preset ->
-                option [ onClick (updatePatternModelForm model preset.pattern)] [text preset.name]
+                option [ value preset.pattern ] [text preset.name]
             )
             presetList))
 
