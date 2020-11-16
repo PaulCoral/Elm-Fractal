@@ -118,10 +118,6 @@ view model =
             ]
         , viewCommand model
         , viewDrawing model
-        , br [] []
-        , text "DEBUG"
-        , br [] []
-        , text (String.fromInt (List.length (linesToSvgLines (model.drawing.lines))))
         ]
 
 
@@ -170,6 +166,8 @@ viewCommandUpdate model =
         [ text ("Pattern : " ++ (anglesToString model.drawing.pattern))
         , br [] []
         , text ("Number of iterations : " ++ (String.fromInt model.nbIterations))
+        , br [] []
+        , text ("Number of drawn lines :" ++ (String.fromInt (List.length (linesToSvgLines (model.drawing.lines)))))
         , br [] []
         , button [ onClick NextIter ] [ text "Next" ]
         , button [ onClick Reset ] [text "Reset"]
