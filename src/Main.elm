@@ -4,114 +4,171 @@ import Browser
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick, onInput)
+import Svg exposing (svg)
+import Svg.Attributes
 
 import FracPattern exposing (..)
+import Drawable exposing (..)
+
+
 
 -- MAIN
 
-
+{-| the main function
+-}
 main =
   Browser.sandbox { init = init, update = update, view = view }
-
 
 
 -- MODEL
 
 
+{-| The application model
+-}
 type alias Model =
   { nbIterations : Int
-  , pattern : FracPattern
   , form : ModelForm
+  , drawing : DrawingState
   }
 
-type alias ModelForm =
-    { pattern : String
-    , nbIter : Int
-    }
 
+{-| Record of the live changes in the form
+-}
+type alias ModelForm = { pattern : String }
+
+
+{-| initialization function
+-}
 init : Model
-init = Model 0 [] (ModelForm "" 0)
+init =
+    Model
+        1
+        initModelForm
+        initDrawingState
 
-isInitModel : Model -> Bool
-isInitModel model =
-    model.pattern == emptyFracPattern
 
+defaultFormPatternText : String
+defaultFormPatternText = ""
+
+
+initModelForm : ModelForm
+initModelForm = (ModelForm defaultFormPatternText)
+
+{-| Return true if the model is the one at the application start
+-}
+isStartModel : Model -> Bool
+isStartModel model =
+    model.drawing.pattern == emptyFracPattern
+
+
+nextDrawingIteration : Model -> DrawingState
+nextDrawingIteration model =
+    let
+        ds = model.drawing
+    in
+        { ds
+        | lines = updateLinesTo ds
+        }
+
+
+{-| Messages for application update
+-}
 type Msg
     = Draw
-    | AddIter
-    | RemoveIter
+    | NextIter
     | Reset
     | UpdateForm ModelForm
 
+
+{-| Update the application Model from a Msg and the current Model
+-}
 update : Msg -> Model -> Model
 update msg model =
     case msg of
         Draw ->
             { model
-            | nbIterations = model.form.nbIter
-            , pattern = (fracPatternFromString model.form.pattern)
+            | drawing =
+                addPatternToDrawingState
+                    (model.drawing)
+                    (fracPatternFromString model.form.pattern)
             }
-        AddIter -> {model | nbIterations = model.nbIterations + 1}
-        RemoveIter -> {model | nbIterations = model.nbIterations - 1}
+        NextIter ->
+            { model
+            | nbIterations = model.nbIterations + 1
+            , drawing = nextDrawingIteration model
+            }
         Reset -> init
         UpdateForm mf -> {model | form = mf}
 
+
+{-| The view of the application. Created from a Model
+-}
 view : Model -> Html Msg
 view model =
-    div [] [ viewCommand model ]
+    div
+        []
+        [ viewCommand model
+        , viewDrawing model
+        , br [] []
+        , text "DEBUG"
+        , br [] []
+        , text (String.fromInt (List.length (linesToSvgLines (model.drawing.lines))))
+        ]
 
 
+{-| Return the appropriate UI to display
+-}
 viewCommand : Model -> Html Msg
 viewCommand model =
-    if isInitModel model then
+    if isStartModel model then
         viewCommandInit model
     else
         viewCommandUpdate model
 
+
+{-| The UI at application start.
+-}
 viewCommandInit : Model -> Html Msg
 viewCommandInit model =
     div []
-        [ input [ type_ "text", onInput (patFromText model) ] []
-        , input [ type_ "number", onInput (nbIterFromText model)] []
+        [ input [ type_ "text", onInput (updatePatternModelForm model) ] []
         , br [] []
         , button [onClick Draw] [text "Enter"]
         , button [ onClick Reset ] [text "Reset"]
         ]
 
+
+{-| The UI to update application state
+-}
 viewCommandUpdate : Model -> Html Msg
 viewCommandUpdate model =
     div []
-        [ text ("Pattern : " ++ (fracPatternToString model.pattern))
+        [ text ("Pattern : " ++ (fracPatternToString model.drawing.pattern))
         , br [] []
         , text ("Number of iterations : " ++ (String.fromInt model.nbIterations))
         , br [] []
-        , button [ onClick AddIter ] [ text "+" ]
-        , br [] []
-        , button [ onClick RemoveIter ] [ text "-" ]
+        , button [ onClick NextIter ] [ text "Next" ]
         ]
 
-patFromText : Model -> String -> Msg
-patFromText model s =
+
+{-| Create Msg to update `ModelForm.pattern` from String
+-}
+updatePatternModelForm : Model -> String -> Msg
+updatePatternModelForm model s =
     let
         prevForm = model.form
     in
         UpdateForm { prevForm | pattern = s}
 
-nbIterFromText : Model -> String -> Msg
-nbIterFromText model s =
+
+viewDrawing : Model -> Html Msg
+viewDrawing model =
     let
-        prevForm = model.form
-        nb =
-            case (String.toInt s) of
-                Nothing -> prevForm.nbIter
-                Just a -> a
+        sizeString = String.fromFloat initLineLength
     in
-        UpdateForm { prevForm | nbIter = nb}
-
-
-
-
-
-
-
-
+    svg
+        [ Svg.Attributes.viewBox ("0 0 " ++ sizeString ++ " " ++ sizeString)
+        , Svg.Attributes.width sizeString
+        , Svg.Attributes.height sizeString
+        ]
+        (linesToSvgLines (model.drawing.lines))
