@@ -149,16 +149,17 @@ viewCommandInit model =
         ]
 
 
+{-| Show a list of presets
+-}
 viewCommandPreset : Model -> Html Msg
 viewCommandPreset model =
     select []
-        (List.map
+        (  (option [] [text "Custom"])
+        :: (List.map
             (\preset ->
                 option [ onClick (updatePatternModelForm model preset.pattern)] [text preset.name]
             )
-            presetList)
-        --[ option [ onClick (updatePatternModelForm model PresetPattern.snowFlake)] [ text "MandelBrot" ]
-        --]
+            presetList))
 
 
 {-| The UI to update application state
