@@ -74,10 +74,11 @@ updateDrawingState ds =
 vectorRotate : Vector -> Float -> Vector
 vectorRotate v angle =
     let
-        --newX = (cos angle) * v.x - (sin angle) * v.y
-        --newY = (sin angle) * v.x - (cos angle) * v.y
-        newX =  (cos (degrees angle)) * (vectorSize v)
-        newY =  -(sin (degrees angle)) * (vectorSize v)
+        deg = (degrees angle)
+        newX = ((cos deg) * v.x) - ((sin deg) * v.y)
+        newY = ((sin deg) * v.x) + ((cos deg) * v.y)
+        --newX =  (cos (degrees angle)) * (vectorSize v)
+        --newY =  -(sin (degrees angle)) * (vectorSize v)
     in
         { x = newX , y = newY }
 
@@ -123,7 +124,7 @@ initialPoint = Point 0 (initLineLength / 2)
 {-| Size of the line drawn at Iteration 0
 -}
 initLineLength : Float
-initLineLength = 600
+initLineLength = 900
 
 
 {-| The style that will be applied to every line
@@ -132,7 +133,7 @@ lineStyle : List (Attribute msg)
 lineStyle =
     [ fill "black"
     , stroke "black"
-    , strokeWidth "3"
+    , strokeWidth "1"
     ]
 
 
@@ -261,7 +262,7 @@ updateLinesToRec pat lines =
             case (List.head lines) of
                 Just l -> l
                 Nothing -> (initialPoint, initialPoint)
-        newSize = Debug.log "Size : " ((lineGetSize firstLine) / 3)
+        newSize = ((lineGetSize firstLine) / 3) -- TODO change 3
         resizedLines = List.map (\n -> lineToSize n newSize) lines
     in
         (listFlatMap
@@ -282,12 +283,12 @@ updateLineWithPattern line pat =
 
 updateLineWithPatternRec : FracPattern -> Point -> Vector -> Lines -> Lines
 updateLineWithPatternRec pat prevPoint vector lines =
-    case (Debug.log "before" pat) of
-        [] -> (Debug.log "here" (List.reverse lines))
+    case pat of
+        [] -> List.reverse lines
         x :: xs ->
             let
-                vec = (updateVectorFromSymbol (Debug.log "sdf" vector) x)
-                secPoint = Debug.log "secPoint" (pointAdd prevPoint vec)
+                vec = updateVectorFromSymbol vector x
+                secPoint = pointAdd prevPoint vec
                 newLine = (prevPoint, secPoint)
             in
                 updateLineWithPatternRec
