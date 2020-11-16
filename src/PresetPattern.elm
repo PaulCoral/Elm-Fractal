@@ -9,13 +9,7 @@ type alias Preset =
 
 presetList : List Preset
 presetList =
-    [ snowFlake
-    , coolCube
+    [ Preset "Snow Flake" (anglesToString [0,60,-120,60])
+    , Preset "Cool Cube" (anglesToString [0,90,-90,-90,90])
+    , Preset "Many Cubes"(anglesToString [0,90,90,90])
     ]
-
-
-snowFlake : Preset
-snowFlake = Preset "Snow Flake" (anglesToString [0,60,-120,60])
-
-coolCube : Preset
-coolCube = Preset "Cool Cube" (anglesToString [0,90,-90,-90,90])

@@ -67,6 +67,14 @@ nextDrawingIteration model =
     updateDrawingState model.drawing
 
 
+modelReset : Model -> Model
+modelReset model =
+    { model
+    | nbIterations = init.nbIterations
+    , drawing = init.drawing
+    }
+
+
 {-| Messages for application update
 -}
 type Msg
@@ -93,7 +101,7 @@ update msg model =
             | nbIterations = model.nbIterations + 1
             , drawing = nextDrawingIteration model
             }
-        Reset -> { model | drawing = init.drawing }
+        Reset -> modelReset model
         UpdateForm mf -> {model | form = mf}
 
 
