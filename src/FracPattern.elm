@@ -4,29 +4,26 @@ module FracPattern exposing (..)
 
 {-| Represent the possible "moves" in fractal drawing
 -}
-type PatternSymbol
-    = Straight
-    | Left
-    | Right
+type alias DegreeAngle = Float
 
 
 {-| Represent a sequence of patterns
 -}
-type alias FracPattern = List PatternSymbol
+type alias Angles = List DegreeAngle
 
 
 {-| An empty FracPattern (i.e. with no PatternSymbol)
 -}
-emptyFracPattern : FracPattern
-emptyFracPattern = []
+emptyAngles : Angles
+emptyAngles = []
 
 
 {-| Convert a Sequence of Pattern to a String
 -}
-fracPatternToString : FracPattern -> String
-fracPatternToString fp =
+anglesToString : Angles -> String
+anglesToString fp =
     let
-        mapString = List.map patternSymbolsToString fp
+        mapString = List.map degreeAngleToString fp
         sepComma = List.intersperse "," mapString
     in
         List.foldr (++) "" sepComma
@@ -34,28 +31,27 @@ fracPatternToString fp =
 
 {-| Convert a pattern to a String
 -}
-patternSymbolsToString : PatternSymbol -> String
-patternSymbolsToString sym =
-    case sym of
-        Straight -> "S"
-        Left -> "L"
-        Right -> "R"
-
+degreeAngleToString : DegreeAngle -> String
+degreeAngleToString deg = String.fromFloat deg
 
 {-| Get a sequence of Pattern from a String
 -}
-fracPatternFromString : String -> FracPattern
-fracPatternFromString str =
-        List.map patternSymbolsFromChar (String.toList str)
+anglesFromString : String -> Angles
+anglesFromString str =
+    let
+        filtered = String.filter (\n -> (n /= ' ')) str
+        splited = String.split "," filtered
+    in
+        List.map degreeAngleFromString splited
 
 
 {-| Get a Pattern from a character. Ignore case
 -}
-patternSymbolsFromChar : Char -> PatternSymbol
-patternSymbolsFromChar char =
-    case (Char.toUpper char) of
-        'L' -> Left
-        'R' -> Right
-        'S' -> Straight
-        _   -> Straight
+degreeAngleFromString : String -> DegreeAngle
+degreeAngleFromString str =
+    case (String.toFloat str) of
+        Just a ->
+            a
+        Nothing ->
+            0
 

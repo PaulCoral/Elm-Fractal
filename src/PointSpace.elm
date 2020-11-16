@@ -50,7 +50,7 @@ type alias Vector = Point
 
 {-| Rotate a vector from an angle
 -}
-vectorRotate : Vector -> Float -> Vector
+vectorRotate : Vector -> DegreeAngle -> Vector
 vectorRotate v angle =
     let
         deg = (degrees angle)
@@ -64,12 +64,12 @@ vectorRotate v angle =
 
 {-| Get a new vector from PatternSymbol
 -}
-updateVectorFromSymbol : Vector -> PatternSymbol -> Vector
-updateVectorFromSymbol v sym =
-    case sym of
-        Straight -> v
-        Left -> vectorRotate v 60 -- TODO Change
-        Right -> vectorRotate v (-60)
+updateVectorFromSymbol : Vector -> DegreeAngle -> Vector
+updateVectorFromSymbol v deg =
+    vectorRotate v deg
+
+
+
 
 
 vectorSize : Vector -> Float
