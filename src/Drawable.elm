@@ -4,6 +4,7 @@ import Svg exposing (..)
 import Svg.Attributes exposing (..)
 
 import FracPattern exposing (..)
+import PointSpace exposing (..)
 import Utils exposing (..)
 
 
@@ -14,26 +15,6 @@ type alias DrawingState =
     { pattern : FracPattern
     , lines : Lines
     }
-
-
-{-| Represent a position in 2D drawing space
--}
-type alias Point =
-    { x : Float
-    , y : Float
-    }
-
-{-| A line, presented as two ORDERED Points-}
-type alias Line = (Point, Point)
-
-{-| Represent a sequence of Points
--}
-type alias Lines = List Line
-
-
-{-| Represent a vector in 2D drawing space
--}
-type alias Vector = Point
 
 
 {-| Initialize the drawing state
@@ -58,61 +39,7 @@ addPatternToDrawingState prev fracpat =
 -}
 updateDrawingState : DrawingState -> DrawingState
 updateDrawingState ds =
-    { ds | lines = (updateLinesTo ds) }
-    {-if iter <= ds.currentIteration then
-        ds
-    else
-        { ds
-        | currentIteration = iter
-        , lines = (updateLinesTo ds iter)
-        }
-    -}
-
-
-{-| Rotate a vector from an angle
--}
-vectorRotate : Vector -> Float -> Vector
-vectorRotate v angle =
-    let
-        deg = (degrees angle)
-        newX = ((cos deg) * v.x) - ((sin deg) * v.y)
-        newY = ((sin deg) * v.x) + ((cos deg) * v.y)
-        --newX =  (cos (degrees angle)) * (vectorSize v)
-        --newY =  -(sin (degrees angle)) * (vectorSize v)
-    in
-        { x = newX , y = newY }
-
-
-{-| Add two points
--}
-pointAdd : Point -> Point -> Point
-pointAdd p1 p2 =
-    Point (p1.x + p2.x) (p1.y + p2.y)
-
-
-{-| Subtract two points
--}
-pointSub : Point -> Point -> Point
-pointSub p1 p2 =
-    pointAdd p1 (pointNeg p2)
-
-
-pointMultByScalar : Point -> Float -> Point
-pointMultByScalar p s =
-    Point (p.x * s) (p.y * s)
-
-
-{-| Negate a point (e.g. (1,2) => (-1,-2))
--}
-pointNeg : Point -> Point
-pointNeg p =
-    Point -p.x -p.y
-
-
-{-| The turn angle used when drawing
--}
-turnAngle : Float
-turnAngle = 60
+    { ds | lines = (updateLines ds) }
 
 
 {-| The point where the drawing start
@@ -135,40 +62,6 @@ lineStyle =
     , stroke "black"
     , strokeWidth "1"
     ]
-
-
-lineToVector : Line -> Vector
-lineToVector l =
-    let
-        (p1,p2) = l
-    in
-        pointSub p2 p1
-
-
-lineTranslate : Line -> Point -> Line
-lineTranslate line p =
-    let
-        (p1, p2) = line
-        newP1 = pointAdd p p1
-        newP2 = pointAdd p p2
-    in
-        (newP1, newP2)
-
-
-lineGetSize : Line -> Float
-lineGetSize line =
-    lineToVector line |> vectorSize
-
-
-lineToSize : Line -> Float -> Line
-lineToSize l newSize =
-    let
-        (p1, _) = l
-        vector = lineToVector l
-        scaled = vectorToSize vector newSize
-        newP2 = pointAdd p1 scaled
-    in
-        (p1, newP2)
 
 
 {-| Create a Svg line from a line
@@ -195,56 +88,26 @@ lineToSvgLine l =
 -}
 linesToSvgLines : Lines -> List (Svg msg)
 linesToSvgLines lines =
-    pointsToLinesRec lines []
+    linesToSvgLinesRec lines []
 
 
 {-| Create a sequence of Svg lines from a sequence of Points.
 Recursive version. takes an accumulator.
 -}
-pointsToLinesRec : Lines -> List(Svg msg) -> List (Svg msg)
-pointsToLinesRec lines acc =
+linesToSvgLinesRec : Lines -> List(Svg msg) -> List (Svg msg)
+linesToSvgLinesRec lines acc =
     case lines of
         [] -> acc
         line :: rest ->
-            pointsToLinesRec rest ((lineToSvgLine line) :: acc)
+            linesToSvgLinesRec rest ((lineToSvgLine line) :: acc)
 
-
-{-| Takes a line and a PatternSymbol, to return a new Point.
--}
-getVectorFromPattern : Line -> PatternSymbol -> Vector
-getVectorFromPattern line sym =
-    updateVectorFromSymbol (lineToVector line) sym
-
-
-{-| Get a new vector from PatternSymbol
--}
-updateVectorFromSymbol : Vector -> PatternSymbol -> Vector
-updateVectorFromSymbol v sym =
-    case sym of
-        Straight -> v
-        Left -> vectorRotate v turnAngle
-        Right -> vectorRotate v (-turnAngle)
-
-
-vectorSize : Vector -> Float
-vectorSize v =
-    sqrt ((v.x * v.x) + (v.y * v.y))
-
-
-vectorToSize : Vector -> Float -> Vector
-vectorToSize v newSize =
-    let
-        originalSize = vectorSize v
-        scale = newSize / originalSize
-    in
-        pointMultByScalar v scale
 
 
 {-| Take DrawingState and a number of iterations. Return the lines after iterations
 -}
-updateLinesTo : DrawingState -> Lines
-updateLinesTo ds =
-    updateLinesToRec
+updateLines : DrawingState -> Lines
+updateLines ds =
+    updateLinesRec
         ds.pattern
         ds.lines
 
@@ -255,8 +118,8 @@ updateLinesTo ds =
     current : the current iteration
     lines : An accumulator for the Lines to return
 -}
-updateLinesToRec : FracPattern -> Lines -> Lines
-updateLinesToRec pat lines =
+updateLinesRec : FracPattern -> Lines -> Lines
+updateLinesRec pat lines =
     let
         firstLine =
             case (List.head lines) of
@@ -269,8 +132,6 @@ updateLinesToRec pat lines =
             (\n -> updateLineWithPattern n pat)
             (resizedLines)
         )
-
-
 
 updateLineWithPattern : Line -> FracPattern -> Lines
 updateLineWithPattern line pat =
