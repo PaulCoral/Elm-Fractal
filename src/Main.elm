@@ -58,7 +58,7 @@ initModelForm = (ModelForm defaultFormPatternText)
 -}
 isStartModel : Model -> Bool
 isStartModel model =
-    model.drawing.pattern == emptyFracPattern
+    model.drawing.pattern == emptyAngles
 
 
 nextDrawingIteration : Model -> DrawingState
@@ -85,7 +85,7 @@ update msg model =
             | drawing =
                 addPatternToDrawingState
                     (model.drawing)
-                    (fracPatternFromString model.form.pattern)
+                    (anglesFromString model.form.pattern)
             }
         NextIter ->
             { model
@@ -138,7 +138,7 @@ viewCommandInit model =
 viewCommandUpdate : Model -> Html Msg
 viewCommandUpdate model =
     div []
-        [ text ("Pattern : " ++ (fracPatternToString model.drawing.pattern))
+        [ text ("Pattern : " ++ (anglesToString model.drawing.pattern))
         , br [] []
         , text ("Number of iterations : " ++ (String.fromInt model.nbIterations))
         , br [] []

@@ -12,7 +12,7 @@ import Utils exposing (..)
 {-| Represent the state and the evolution of the drawing
 -}
 type alias DrawingState =
-    { pattern : FracPattern
+    { pattern : Angles
     , lines : Lines
     }
 
@@ -30,7 +30,7 @@ initDrawingState =
 
 {-| Add FracPattern to DrawingState
 -}
-addPatternToDrawingState : DrawingState -> FracPattern -> DrawingState
+addPatternToDrawingState : DrawingState -> Angles -> DrawingState
 addPatternToDrawingState prev fracpat =
     {prev | pattern = fracpat}
 
@@ -118,7 +118,7 @@ updateLines ds =
     current : the current iteration
     lines : An accumulator for the Lines to return
 -}
-updateLinesRec : FracPattern -> Lines -> Lines
+updateLinesRec : Angles -> Lines -> Lines
 updateLinesRec pat lines =
     let
         firstLine =
@@ -133,7 +133,7 @@ updateLinesRec pat lines =
             (resizedLines)
         )
 
-updateLineWithPattern : Line -> FracPattern -> Lines
+updateLineWithPattern : Line -> Angles -> Lines
 updateLineWithPattern line pat =
     let
         (p, _) = line
@@ -142,7 +142,7 @@ updateLineWithPattern line pat =
         updateLineWithPatternRec pat p vector []
 
 
-updateLineWithPatternRec : FracPattern -> Point -> Vector -> Lines -> Lines
+updateLineWithPatternRec : Angles -> Point -> Vector -> Lines -> Lines
 updateLineWithPatternRec pat prevPoint vector lines =
     case pat of
         [] -> List.reverse lines
