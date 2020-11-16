@@ -66,7 +66,7 @@ vectorRotate v angle =
 -}
 updateVectorFromSymbol : Vector -> DegreeAngle -> Vector
 updateVectorFromSymbol v deg =
-    vectorRotate v deg
+    vectorRotate v (-deg)
 
 
 
