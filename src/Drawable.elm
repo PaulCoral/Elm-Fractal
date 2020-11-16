@@ -194,7 +194,7 @@ pointsToLinesRec lines acc =
 getNewLineFromPattern : Line -> PatternSymbol -> Line
 getNewLineFromPattern line sym =
     let
-        (prev, pt) = line
+        (pt, _) = line
         vector = lineToVector line
         updatedVec = updateVectorFromSymbol vector sym
     in
@@ -285,10 +285,3 @@ updateLineWithPatternRec pat lines =
                         (getNewLineFromPattern line x)
                         (lines)
                     )
-
-
-
-
-
-
-

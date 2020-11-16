@@ -4,8 +4,11 @@ import Browser
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick, onInput)
+import Svg exposing (..)
+import Svg.Attributes exposing (..)
 
 import FracPattern exposing (..)
+import Drawable exposing (..)
 
 
 
@@ -26,6 +29,7 @@ type alias Model =
   { nbIterations : Int
   , pattern : FracPattern
   , form : ModelForm
+  , drawing : DrawingState
   }
 
 
@@ -40,8 +44,16 @@ type alias ModelForm =
 {-| initialization function
 -}
 init : Model
-init = Model 0 [] (ModelForm "" 0)
+init =
+    Model
+        0
+        []
+        initModelForm
+        initDrawingState
 
+
+initModelForm : ModelForm
+initModelForm = (ModelForm "" 0)
 
 {-| Return true if the model is the one at the application start
 -}
@@ -50,12 +62,26 @@ isStartModel model =
     model.pattern == emptyFracPattern
 
 
+newDrawingStateFromModel : Model -> DrawingState
+newDrawingStateFromModel model =
+    let
+        ds = model.drawing
+        updatePattern =
+            addPatternToDrawingState
+                ds
+                model.pattern
+    in
+        updateDrawingState
+            updatePattern
+            model.nbIterations
+
+
+
 {-| Messages for application update
 -}
 type Msg
     = Draw
-    | AddIter
-    | RemoveIter
+    | NextIter
     | Reset
     | UpdateForm ModelForm
 
@@ -69,9 +95,13 @@ update msg model =
             { model
             | nbIterations = model.form.nbIter
             , pattern = (fracPatternFromString model.form.pattern)
+            , drawing = newDrawingStateFromModel model
             }
-        AddIter -> {model | nbIterations = model.nbIterations + 1}
-        RemoveIter -> {model | nbIterations = model.nbIterations - 1}
+        NextIter ->
+            { model
+            | nbIterations = model.nbIterations + 1
+            , drawing = newDrawingStateFromModel model
+            }
         Reset -> init
         UpdateForm mf -> {model | form = mf}
 
@@ -80,7 +110,11 @@ update msg model =
 -}
 view : Model -> Html Msg
 view model =
-    div [] [ viewCommand model ]
+    div
+        []
+        [ viewCommand model
+        , viewDrawing model
+        ]
 
 
 {-| Return the appropriate UI to display
@@ -115,9 +149,7 @@ viewCommandUpdate model =
         , br [] []
         , text ("Number of iterations : " ++ (String.fromInt model.nbIterations))
         , br [] []
-        , button [ onClick AddIter ] [ text "+" ]
-        , br [] []
-        , button [ onClick RemoveIter ] [ text "-" ]
+        , button [ onClick NextIter ] [ text "Next" ]
         ]
 
 
@@ -145,9 +177,11 @@ updateNbIterModelForm model s =
         UpdateForm { prevForm | nbIter = nb}
 
 
-
-
-
-
-
-
+viewDrawing : Model -> Html Msg
+viewDrawing model =
+    svg
+        [ viewBox "0 0 400 400"
+        , Svg.Attributes.width "400"
+        , Svg.Attributes.width "400"
+        ]
+        (linesToSvgLines (model.drawing.lines))
