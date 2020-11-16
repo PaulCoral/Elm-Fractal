@@ -15,6 +15,7 @@ listToListOfPairRec list acc =
         [_] -> acc
         x :: xs ->
             case xs of
+                [] -> acc
                 y :: _ -> (x,y) :: acc
 
 

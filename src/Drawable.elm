@@ -11,8 +11,7 @@ import Utils exposing (..)
 {-| Represent the state and the evolution of the drawing
 -}
 type alias DrawingState =
-    { currentIteration : Int
-    , pattern : FracPattern
+    { pattern : FracPattern
     , lines : Lines
     }
 
@@ -45,7 +44,7 @@ initDrawingState =
         nextPoint = pointAdd initialPoint (Point initLineLength 0)
         initialLine = (initialPoint, nextPoint)
     in
-        DrawingState 0 [] [initialLine]
+        DrawingState [] [initialLine]
 
 
 {-| Add FracPattern to DrawingState
@@ -57,15 +56,17 @@ addPatternToDrawingState prev fracpat =
 
 {-| update drawing state to `iter` iterations
 -}
-updateDrawingState : DrawingState -> Int -> DrawingState
-updateDrawingState ds iter =
-    if iter <= ds.currentIteration then
+updateDrawingState : DrawingState -> DrawingState
+updateDrawingState ds =
+    { ds | lines = (updateLinesTo ds) }
+    {-if iter <= ds.currentIteration then
         ds
     else
         { ds
         | currentIteration = iter
-        , lines = updateLinesTo ds iter
+        , lines = (updateLinesTo ds iter)
         }
+    -}
 
 
 {-| Rotate a vector from an angle
@@ -73,8 +74,10 @@ updateDrawingState ds iter =
 vectorRotate : Vector -> Float -> Vector
 vectorRotate v angle =
     let
-        newX = (cos angle) * v.x - (sin angle) * v.y
-        newY = (sin angle) * v.x - (cos angle) * v.y
+        --newX = (cos angle) * v.x - (sin angle) * v.y
+        --newY = (sin angle) * v.x - (cos angle) * v.y
+        newX =  (cos (degrees angle)) * (vectorSize v)
+        newY =  -(sin (degrees angle)) * (vectorSize v)
     in
         { x = newX , y = newY }
 
@@ -114,7 +117,7 @@ turnAngle = 60
 {-| The point where the drawing start
 -}
 initialPoint : Point
-initialPoint = Point 0 0
+initialPoint = Point 0 (initLineLength / 2)
 
 
 {-| Size of the line drawn at Iteration 0
@@ -127,7 +130,8 @@ initLineLength = 600
 -}
 lineStyle : List (Attribute msg)
 lineStyle =
-    [ stroke "blake"
+    [ fill "black"
+    , stroke "black"
     , strokeWidth "3"
     ]
 
@@ -138,6 +142,21 @@ lineToVector l =
         (p1,p2) = l
     in
         pointSub p2 p1
+
+
+lineTranslate : Line -> Point -> Line
+lineTranslate line p =
+    let
+        (p1, p2) = line
+        newP1 = pointAdd p p1
+        newP2 = pointAdd p p2
+    in
+        (newP1, newP2)
+
+
+lineGetSize : Line -> Float
+lineGetSize line =
+    lineToVector line |> vectorSize
 
 
 lineToSize : Line -> Float -> Line
@@ -191,14 +210,9 @@ pointsToLinesRec lines acc =
 
 {-| Takes a line and a PatternSymbol, to return a new Point.
 -}
-getNewLineFromPattern : Line -> PatternSymbol -> Line
-getNewLineFromPattern line sym =
-    let
-        (pt, _) = line
-        vector = lineToVector line
-        updatedVec = updateVectorFromSymbol vector sym
-    in
-        (pt, (pointAdd pt updatedVec))
+getVectorFromPattern : Line -> PatternSymbol -> Vector
+getVectorFromPattern line sym =
+    updateVectorFromSymbol (lineToVector line) sym
 
 
 {-| Get a new vector from PatternSymbol
@@ -227,12 +241,10 @@ vectorToSize v newSize =
 
 {-| Take DrawingState and a number of iterations. Return the lines after iterations
 -}
-updateLinesTo : DrawingState -> Int -> Lines
-updateLinesTo ds iter =
+updateLinesTo : DrawingState -> Lines
+updateLinesTo ds =
     updateLinesToRec
         ds.pattern
-        iter
-        ds.currentIteration
         ds.lines
 
 {-| Recursive implementation of `updateLinesTo`
@@ -242,46 +254,44 @@ updateLinesTo ds iter =
     current : the current iteration
     lines : An accumulator for the Lines to return
 -}
-updateLinesToRec : FracPattern -> Int -> Int -> Lines -> Lines
-updateLinesToRec pat to current lines =
+updateLinesToRec : FracPattern -> Lines -> Lines
+updateLinesToRec pat lines =
     let
-        newIteration = current + 1
-        newSize = initLineLength / (toFloat (newIteration * 3))
+        firstLine =
+            case (List.head lines) of
+                Just l -> l
+                Nothing -> (initialPoint, initialPoint)
+        newSize = Debug.log "Size : " ((lineGetSize firstLine) / 3)
         resizedLines = List.map (\n -> lineToSize n newSize) lines
     in
-        if current < to then
-            updateLinesToRec
-                (pat)
-                (to)
-                (newIteration)
-                (listFlatMap
-                    (\n -> updateLineWithPattern n pat)
-                    (resizedLines)
-                )
-        else
-            lines
+        (listFlatMap
+            (\n -> updateLineWithPattern n pat)
+            (resizedLines)
+        )
 
 
 
 updateLineWithPattern : Line -> FracPattern -> Lines
 updateLineWithPattern line pat =
-    updateLineWithPatternRec pat [line]
-
-
-updateLineWithPatternRec : FracPattern -> Lines -> Lines
-updateLineWithPatternRec pat lines =
     let
-        line =
-            case (List.head (List.reverse lines)) of
-                Just a -> a
-                Nothing -> (initialPoint, initialPoint) -- never happen
+        (p, _) = line
+        vector = lineToVector line
     in
-        case pat of
-            [] -> lines
-            x :: xs ->
+        updateLineWithPatternRec pat p vector []
+
+
+updateLineWithPatternRec : FracPattern -> Point -> Vector -> Lines -> Lines
+updateLineWithPatternRec pat prevPoint vector lines =
+    case (Debug.log "before" pat) of
+        [] -> (Debug.log "here" (List.reverse lines))
+        x :: xs ->
+            let
+                vec = (updateVectorFromSymbol (Debug.log "sdf" vector) x)
+                secPoint = Debug.log "secPoint" (pointAdd prevPoint vec)
+                newLine = (prevPoint, secPoint)
+            in
                 updateLineWithPatternRec
                     (xs)
-                    (listPutAtTheEnd
-                        (getNewLineFromPattern line x)
-                        (lines)
-                    )
+                    (secPoint)
+                    (vec)
+                    (newLine :: lines)

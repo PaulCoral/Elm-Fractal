@@ -4,8 +4,8 @@ import Browser
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick, onInput)
-import Svg exposing (..)
-import Svg.Attributes exposing (..)
+import Svg exposing (svg)
+import Svg.Attributes
 
 import FracPattern exposing (..)
 import Drawable exposing (..)
@@ -27,7 +27,6 @@ main =
 -}
 type alias Model =
   { nbIterations : Int
-  , pattern : FracPattern
   , form : ModelForm
   , drawing : DrawingState
   }
@@ -35,10 +34,7 @@ type alias Model =
 
 {-| Record of the live changes in the form
 -}
-type alias ModelForm =
-    { pattern : String
-    , nbIter : Int
-    }
+type alias ModelForm = { pattern : String }
 
 
 {-| initialization function
@@ -46,35 +42,33 @@ type alias ModelForm =
 init : Model
 init =
     Model
-        0
-        []
+        1
         initModelForm
         initDrawingState
 
 
+defaultFormPatternText : String
+defaultFormPatternText = ""
+
+
 initModelForm : ModelForm
-initModelForm = (ModelForm "" 0)
+initModelForm = (ModelForm defaultFormPatternText)
 
 {-| Return true if the model is the one at the application start
 -}
 isStartModel : Model -> Bool
 isStartModel model =
-    model.pattern == emptyFracPattern
+    model.drawing.pattern == emptyFracPattern
 
 
-newDrawingStateFromModel : Model -> DrawingState
-newDrawingStateFromModel model =
+nextDrawingIteration : Model -> DrawingState
+nextDrawingIteration model =
     let
         ds = model.drawing
-        updatePattern =
-            addPatternToDrawingState
-                ds
-                model.pattern
     in
-        updateDrawingState
-            updatePattern
-            model.nbIterations
-
+        { ds
+        | lines = updateLinesTo ds
+        }
 
 
 {-| Messages for application update
@@ -93,14 +87,15 @@ update msg model =
     case msg of
         Draw ->
             { model
-            | nbIterations = model.form.nbIter
-            , pattern = (fracPatternFromString model.form.pattern)
-            , drawing = newDrawingStateFromModel model
+            | drawing =
+                addPatternToDrawingState
+                    (model.drawing)
+                    (fracPatternFromString model.form.pattern)
             }
         NextIter ->
             { model
             | nbIterations = model.nbIterations + 1
-            , drawing = newDrawingStateFromModel model
+            , drawing = nextDrawingIteration model
             }
         Reset -> init
         UpdateForm mf -> {model | form = mf}
@@ -114,6 +109,10 @@ view model =
         []
         [ viewCommand model
         , viewDrawing model
+        , br [] []
+        , text "DEBUG"
+        , br [] []
+        , text (String.fromInt (List.length (linesToSvgLines (model.drawing.lines))))
         ]
 
 
@@ -133,7 +132,6 @@ viewCommandInit : Model -> Html Msg
 viewCommandInit model =
     div []
         [ input [ type_ "text", onInput (updatePatternModelForm model) ] []
-        , input [ type_ "number", onInput (updateNbIterModelForm model)] []
         , br [] []
         , button [onClick Draw] [text "Enter"]
         , button [ onClick Reset ] [text "Reset"]
@@ -145,7 +143,7 @@ viewCommandInit model =
 viewCommandUpdate : Model -> Html Msg
 viewCommandUpdate model =
     div []
-        [ text ("Pattern : " ++ (fracPatternToString model.pattern))
+        [ text ("Pattern : " ++ (fracPatternToString model.drawing.pattern))
         , br [] []
         , text ("Number of iterations : " ++ (String.fromInt model.nbIterations))
         , br [] []
@@ -163,25 +161,14 @@ updatePatternModelForm model s =
         UpdateForm { prevForm | pattern = s}
 
 
-{-| Create Msg to update `ModelForm.nbIter` from String
--}
-updateNbIterModelForm : Model -> String -> Msg
-updateNbIterModelForm model s =
-    let
-        prevForm = model.form
-        nb =
-            case (String.toInt s) of
-                Nothing -> prevForm.nbIter
-                Just a -> a
-    in
-        UpdateForm { prevForm | nbIter = nb}
-
-
 viewDrawing : Model -> Html Msg
 viewDrawing model =
+    let
+        sizeString = String.fromFloat initLineLength
+    in
     svg
-        [ viewBox "0 0 400 400"
-        , Svg.Attributes.width "400"
-        , Svg.Attributes.width "400"
+        [ Svg.Attributes.viewBox ("0 0 " ++ sizeString ++ " " ++ sizeString)
+        , Svg.Attributes.width sizeString
+        , Svg.Attributes.height sizeString
         ]
         (linesToSvgLines (model.drawing.lines))

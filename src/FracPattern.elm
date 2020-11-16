@@ -29,7 +29,7 @@ fracPatternToString fp =
         mapString = List.map patternSymbolsToString fp
         sepComma = List.intersperse "," mapString
     in
-        List.foldl (++) "" sepComma
+        List.foldr (++) "" sepComma
 
 
 {-| Convert a pattern to a String
@@ -46,8 +46,7 @@ patternSymbolsToString sym =
 -}
 fracPatternFromString : String -> FracPattern
 fracPatternFromString str =
-        List.map patternSymbolsFromChar
-        <| String.toList str
+        List.map patternSymbolsFromChar (String.toList str)
 
 
 {-| Get a Pattern from a character. Ignore case
