@@ -19,8 +19,12 @@ jobs:
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
-      - uses: jorelali/setup-elm@v2
+      - name: setup elm
+        uses: jorelali/setup-elm@v2
         with:
           elm-version: 0.19.1
-      - run: ls
-      - run: elm make src/Main.elm
+      - name: some test
+        run: ls -a && pwd
+      
+      - name : run elm make
+        run: elm make src/Main.elm
