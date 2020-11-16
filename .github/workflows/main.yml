@@ -24,7 +24,7 @@ jobs:
         with:
           elm-version: 0.19.1
       - name: some test
-        run: ls -a && pwd
+        run: cd .. && ls -a && pwd
       
       - name : run elm make
         run: elm make src/Main.elm
