@@ -69,14 +69,15 @@ updateVectorFromSymbol v deg =
     vectorRotate v (-deg)
 
 
-
-
-
+{-| Get the size of the given vector
+-}
 vectorSize : Vector -> Float
 vectorSize v =
     sqrt ((v.x * v.x) + (v.y * v.y))
 
 
+{-| Scale vector to the given size
+-}
 vectorToSize : Vector -> Float -> Vector
 vectorToSize v newSize =
     let
@@ -98,6 +99,12 @@ type alias Line = (Point, Point)
 type alias Lines = List Line
 
 
+{-| Return a vector from line
+
+    (point1,point2) = line
+    Return vector of (point2 - point1)
+
+-}
 lineToVector : Line -> Vector
 lineToVector l =
     let
@@ -106,21 +113,15 @@ lineToVector l =
         pointSub p2 p1
 
 
-lineTranslate : Line -> Point -> Line
-lineTranslate line p =
-    let
-        (p1, p2) = line
-        newP1 = pointAdd p p1
-        newP2 = pointAdd p p2
-    in
-        (newP1, newP2)
-
-
+{-| return length of a line
+-}
 lineGetSize : Line -> Float
 lineGetSize line =
     lineToVector line |> vectorSize
 
 
+{-| Scale a line to the given size
+-}
 lineToSize : Line -> Float -> Line
 lineToSize l newSize =
     let

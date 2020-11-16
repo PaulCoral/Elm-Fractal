@@ -12,7 +12,7 @@ type alias DegreeAngle = Float
 type alias Angles = List DegreeAngle
 
 
-{-| An empty FracPattern (i.e. with no PatternSymbol)
+{-| An empty angle list
 -}
 emptyAngles : Angles
 emptyAngles = []
@@ -34,6 +34,7 @@ anglesToString fp =
 degreeAngleToString : DegreeAngle -> String
 degreeAngleToString deg = String.fromFloat deg
 
+
 {-| Get a sequence of Pattern from a String
 -}
 anglesFromString : String -> Angles
@@ -45,7 +46,7 @@ anglesFromString str =
         List.map degreeAngleFromString splited
 
 
-{-| Get a Pattern from a character. Ignore case
+{-| Get an angle from a string. Ignore case
 -}
 degreeAngleFromString : String -> DegreeAngle
 degreeAngleFromString str =

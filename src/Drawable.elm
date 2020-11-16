@@ -28,14 +28,14 @@ initDrawingState =
         DrawingState [] [initialLine]
 
 
-{-| Add FracPattern to DrawingState
+{-| Add Angles to DrawingState
 -}
 addPatternToDrawingState : DrawingState -> Angles -> DrawingState
 addPatternToDrawingState prev fracpat =
     {prev | pattern = fracpat}
 
 
-{-| update drawing state to `iter` iterations
+{-| update drawing state lines
 -}
 updateDrawingState : DrawingState -> DrawingState
 updateDrawingState ds =
@@ -84,15 +84,15 @@ lineToSvgLine l =
             []
 
 
-{-| Create a sequence of Svg lines from a sequence of Points
+{-| Create a sequence of Svg lines from a sequence of Lines
 -}
 linesToSvgLines : Lines -> List (Svg msg)
 linesToSvgLines lines =
     linesToSvgLinesRec lines []
 
 
-{-| Create a sequence of Svg lines from a sequence of Points.
-Recursive version. takes an accumulator.
+{-| Create a sequence of Svg lines from a sequence of Lines.
+Recursive implementation. Takes an accumulator.
 -}
 linesToSvgLinesRec : Lines -> List(Svg msg) -> List (Svg msg)
 linesToSvgLinesRec lines acc =
@@ -103,7 +103,7 @@ linesToSvgLinesRec lines acc =
 
 
 
-{-| Take DrawingState and a number of iterations. Return the lines after iterations
+{-| Take DrawingState Return the lines after an iteration
 -}
 updateLines : DrawingState -> Lines
 updateLines ds =
@@ -111,11 +111,9 @@ updateLines ds =
         ds.pattern
         ds.lines
 
-{-| Recursive implementation of `updateLinesTo`
 
+{-| Recursive implementation
     pat : The pattern to evolve with
-    to : the number of iterations to reach
-    current : the current iteration
     lines : An accumulator for the Lines to return
 -}
 updateLinesRec : Angles -> Lines -> Lines
@@ -133,6 +131,9 @@ updateLinesRec pat lines =
             (resizedLines)
         )
 
+
+{-| Create a sequence of lines from previous line and a pattern of angles
+-}
 updateLineWithPattern : Line -> Angles -> Lines
 updateLineWithPattern line pat =
     let
@@ -142,6 +143,8 @@ updateLineWithPattern line pat =
         updateLineWithPatternRec pat p vector []
 
 
+{-| The recursive implementation of `updateLineWithPattern`
+-}
 updateLineWithPatternRec : Angles -> Point -> Vector -> Lines -> Lines
 updateLineWithPatternRec pat prevPoint vector lines =
     case pat of

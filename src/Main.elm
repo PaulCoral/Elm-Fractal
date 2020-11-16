@@ -157,6 +157,8 @@ updatePatternModelForm model s =
         UpdateForm { prevForm | pattern = s}
 
 
+{-| The view with the svg drawing of the fractal
+-}
 viewDrawing : Model -> Html Msg
 viewDrawing model =
     let
