@@ -63,12 +63,7 @@ isStartModel model =
 
 nextDrawingIteration : Model -> DrawingState
 nextDrawingIteration model =
-    let
-        ds = model.drawing
-    in
-        { ds
-        | lines = updateLinesTo ds
-        }
+    updateDrawingState model.drawing
 
 
 {-| Messages for application update
