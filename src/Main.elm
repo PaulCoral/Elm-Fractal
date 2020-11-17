@@ -201,13 +201,16 @@ viewCommandInit model =
 -}
 viewCommandPreset : Model -> Html Msg
 viewCommandPreset model =
-    select [ onInput (\s -> UpdateForm (ModelForm s)) ]
-        (  (option [ value model.form.pattern ] [text "Custom"])
-        :: (List.map
-            (\preset ->
-                option [ value preset.pattern ] [text preset.name]
-            )
-            presetList))
+    let
+       form = model.form
+    in
+        select [ onInput (\s ->( UpdateForm ({form | pattern = s }))) ]
+            (  (option [ value form.pattern ] [text "Custom"])
+            :: (List.map
+                (\preset ->
+                    option [ value preset.pattern ] [text preset.name]
+                )
+                presetList))
 
 
 {-| The UI to update application state
