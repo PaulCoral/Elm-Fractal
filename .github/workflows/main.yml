@@ -25,10 +25,10 @@ jobs:
         uses: jorelali/setup-elm@v2
         with:
           elm-version: 0.19.1
-      - name : run elm make
+      - name : compile elm code
         run: |
           mkdir public/
-          elm make src/Main.elm
+          elm make src/Main.elm --optimize
           mv index.html public/
         
       - name : Deploy to GitHub Pages
