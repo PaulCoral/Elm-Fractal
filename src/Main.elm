@@ -127,7 +127,7 @@ update msg model =
 
 
 
--- SUBSCRITPTIONS
+-- SUBSCRIPTIONS
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
