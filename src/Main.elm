@@ -116,7 +116,13 @@ update msg model =
             }
             , Cmd.none
             )
-        Reset -> init ()
+        Reset ->
+            let
+                (m, cmd) = init ()
+                newModel = { m | form = model.form}
+            in
+                (newModel, cmd)
+
         UpdateForm mf -> ({model | form = mf}, Cmd.none)
 
 
@@ -186,6 +192,7 @@ viewCommandInit model =
             , text "Animated ?"
             , input
                 [ type_ "checkbox"
+                , checked model.form.counterIsSet
                 , onCheck
                     (\bool ->
                         (UpdateForm {form | counterIsSet = bool}))
