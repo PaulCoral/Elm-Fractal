@@ -16,7 +16,7 @@ initCounter =
 
 
 defaultCounterUpTo : Int
-defaultCounterUpTo = 7
+defaultCounterUpTo = 6
 
 
 setCounter : Counter -> Bool -> Counter
