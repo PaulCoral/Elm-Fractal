@@ -6,10 +6,12 @@ import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Svg exposing (svg)
 import Svg.Attributes
+import Time exposing (..)
 
 import FracPattern exposing (..)
 import Drawable exposing (..)
 import PresetPattern exposing (presetList)
+import Counter exposing (..)
 
 
 
@@ -18,7 +20,12 @@ import PresetPattern exposing (presetList)
 {-| the main function
 -}
 main =
-  Browser.sandbox { init = init, update = update, view = view }
+  Browser.element
+    { init = init
+    , update = update
+    , view = view
+    , subscriptions = subscriptions
+    }
 
 
 -- MODEL
@@ -30,22 +37,29 @@ type alias Model =
   { nbIterations : Int
   , form : ModelForm
   , drawing : DrawingState
+  , counter : Counter
   }
 
 
 {-| Record of the live changes in the form
 -}
-type alias ModelForm = { pattern : String }
+type alias ModelForm =
+    { pattern : String
+    , counterIsSet : Bool
+    }
 
 
 {-| initialization function
 -}
-init : Model
-init =
-    Model
+init :() -> (Model, Cmd Msg)
+init _ =
+    (Model
         1
         initModelForm
         initDrawingState
+        initCounter
+    , Cmd.none
+    )
 
 
 defaultFormPatternText : String
@@ -53,7 +67,7 @@ defaultFormPatternText = ""
 
 
 initModelForm : ModelForm
-initModelForm = (ModelForm defaultFormPatternText)
+initModelForm = (ModelForm defaultFormPatternText initCounter.isEnabled)
 
 {-| Return true if the model is the one at the application start
 -}
@@ -67,18 +81,14 @@ nextDrawingIteration model =
     updateDrawingState model.drawing
 
 
-modelReset : Model -> Model
-modelReset model =
-    { model
-    | nbIterations = init.nbIterations
-    , drawing = init.drawing
-    }
+-- MSG and UPDATE
 
 
 {-| Messages for application update
 -}
 type Msg
     = Draw
+    --| Tick Time.Posix
     | NextIter
     | Reset
     | UpdateForm ModelForm
@@ -86,23 +96,48 @@ type Msg
 
 {-| Update the application Model from a Msg and the current Model
 -}
-update : Msg -> Model -> Model
+update : Msg -> Model -> (Model, Cmd Msg)
 update msg model =
     case msg of
         Draw ->
-            { model
+            ({ model
             | drawing =
                 addPatternToDrawingState
                     (model.drawing)
                     (anglesFromString model.form.pattern)
+            , counter = setCounter model.counter model.form.counterIsSet
             }
+            , Cmd.none
+            )
         NextIter ->
-            { model
+            ({ model
             | nbIterations = model.nbIterations + 1
             , drawing = nextDrawingIteration model
             }
-        Reset -> modelReset model
-        UpdateForm mf -> {model | form = mf}
+            , Cmd.none
+            )
+        Reset -> init ()
+        UpdateForm mf -> ({model | form = mf}, Cmd.none)
+
+
+
+-- SUBSCRITPTIONS
+
+subscriptions : Model -> Sub Msg
+subscriptions model =
+    let
+         c = model.counter
+         i = model.nbIterations
+         hasNext = Debug.log "hey" (c.isEnabled && (i <= c.upTo))
+    in
+        if hasNext then
+            Time.every 1500 (\_ -> NextIter)
+        else
+            Sub.none
+
+
+
+-- VIEW
 
 
 {-| The view of the application. Created from a Model
@@ -135,27 +170,47 @@ viewCommand model =
 -}
 viewCommandInit : Model -> Html Msg
 viewCommandInit model =
-    div []
-        [ input [ type_ "text", value model.form.pattern ,onInput (updatePatternModelForm model) ] []
-        , br [] []
-        , viewCommandPreset model
-        , br [] []
-        , button [onClick Draw] [text "Enter"]
-        , button [ onClick Reset ] [text "Reset"]
-        ]
+    let
+        form = model.form
+    in
+        div []
+            [ input
+                [ type_ "text"
+                , value form.pattern
+                , onInput (updatePatternModelForm model)
+                ]
+                []
+            , br [] []
+            , viewCommandPreset model
+            , br [] []
+            , text "Animated ?"
+            , input
+                [ type_ "checkbox"
+                , onCheck
+                    (\bool ->
+                        (UpdateForm {form | counterIsSet = bool}))
+                ]
+                []
+            , br [] []
+            , button [onClick Draw] [text "Enter"]
+            , button [ onClick Reset ] [text "Reset"]
+            ]
 
 
 {-| Show a list of presets
 -}
 viewCommandPreset : Model -> Html Msg
 viewCommandPreset model =
-    select [ onInput (\s -> UpdateForm (ModelForm s)) ]
-        (  (option [ value model.form.pattern ] [text "Custom"])
-        :: (List.map
-            (\preset ->
-                option [ value preset.pattern ] [text preset.name]
-            )
-            presetList))
+    let
+       form = model.form
+    in
+        select [ onInput (\s ->( UpdateForm ({form | pattern = s }))) ]
+            (  (option [ value form.pattern ] [text "Custom"])
+            :: (List.map
+                (\preset ->
+                    option [ value preset.pattern ] [text preset.name]
+                )
+                presetList))
 
 
 {-| The UI to update application state
@@ -169,7 +224,7 @@ viewCommandUpdate model =
         , br [] []
         , text ("Number of drawn lines :" ++ (String.fromInt (List.length (linesToSvgLines (model.drawing.lines)))))
         , br [] []
-        , button [ onClick NextIter ] [ text "Next" ]
+        , button [ onClick NextIter] [ text "Next" ]
         , button [ onClick Reset ] [text "Reset"]
         ]
 
