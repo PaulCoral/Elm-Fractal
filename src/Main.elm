@@ -201,11 +201,11 @@ viewCommandInit model =
 -}
 viewCommandPreset : Model -> Html Msg
 viewCommandPreset model =
-    select []
-        (  (option [] [text "Custom"])
+    select [ onInput (\s -> UpdateForm (ModelForm s)) ]
+        (  (option [ value model.form.pattern ] [text "Custom"])
         :: (List.map
             (\preset ->
-                option [ onClick (updatePatternModelForm model preset.pattern)] [text preset.name]
+                option [ value preset.pattern ] [text preset.name]
             )
             presetList))
 
