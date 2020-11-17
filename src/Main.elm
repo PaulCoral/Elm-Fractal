@@ -134,7 +134,7 @@ subscriptions model =
     let
          c = model.counter
          i = model.nbIterations
-         hasNext = Debug.log "hey" (c.isEnabled && (i <= c.upTo))
+         hasNext = (c.isEnabled && (i <= c.upTo))
     in
         if hasNext then
             Time.every 1500 (\_ -> NextIter)
