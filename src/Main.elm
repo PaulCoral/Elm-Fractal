@@ -1,16 +1,21 @@
 module Main exposing (main)
 
 import Browser
+import Canvas.Settings.Line exposing (lineWidth)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Canvas exposing (shapes)
 import Canvas.Settings exposing (fill,stroke)
+import Canvas.Settings.Advanced exposing (transform, Transform, scale, translate)
+import Canvas.Settings.Line exposing (lineWidth)
 import Color
 import Time exposing (..)
+import Json.Decode as Json
 
 import FracPattern exposing (..)
 import Drawable exposing (..)
+import PointSpace
 import PresetPattern exposing (presetList)
 import Counter exposing (..)
 
@@ -39,6 +44,7 @@ type alias Model =
   , form : ModelForm
   , drawing : DrawingState
   , counter : Counter
+  , transform : ModelTransform
   }
 
 
@@ -50,15 +56,29 @@ type alias ModelForm =
     }
 
 
+type alias ModelTransform =
+    { scale : Float
+    , translate : PointSpace.Point
+    , prevPos : PointSpace.Point
+    , mouseClicked : Bool
+    }
+
+type Zoom = In | Out
+
+zoomFactor : Float
+zoomFactor = 1 / 10
+
+
 {-| initialization function
 -}
 init :() -> (Model, Cmd Msg)
 init _ =
     (Model
-        1
+        0
         initModelForm
         initDrawingState
         initCounter
+        initModelTransform
     , Cmd.none
     )
 
@@ -69,6 +89,27 @@ defaultFormPatternText = ""
 
 initModelForm : ModelForm
 initModelForm = (ModelForm defaultFormPatternText initCounter.isEnabled)
+
+
+initModelTransform : ModelTransform
+initModelTransform =
+    ModelTransform
+        (1)
+        (PointSpace.Point 0 0)
+        (PointSpace.Point 0 0)
+        (False)
+
+
+modelTransformToList : ModelTransform -> List Transform
+modelTransformToList mt =
+    let
+        s = mt.scale
+        x = mt.translate.x / s
+        y = mt.translate.y / s
+    in
+        [ scale s s
+        , translate x y
+        ]
 
 {-| Return true if the model is the one at the application start
 -}
@@ -89,10 +130,13 @@ nextDrawingIteration model =
 -}
 type Msg
     = Draw
-    --| Tick Time.Posix
     | NextIter
     | Reset
     | UpdateForm ModelForm
+    | Scale Zoom
+    | Translate Float Float
+    | MouseClick Bool Float Float
+    | None
 
 
 {-| Update the application Model from a Msg and the current Model
@@ -125,6 +169,82 @@ update msg model =
                 (newModel, cmd)
 
         UpdateForm mf -> ({model | form = mf}, Cmd.none)
+
+        Scale zoom ->
+            ( updateModelScale zoom model
+            , Cmd.none
+            )
+
+        Translate x y ->
+            ( updateModelTranslate x y model
+            , Cmd.none
+            )
+
+        MouseClick clicked x y ->
+            ( updateMouseClick
+                clicked
+                (PointSpace.Point x y)
+                model
+            , Cmd.none
+            )
+        None -> (model, Cmd.none)
+
+
+
+updateMouseClick : Bool -> PointSpace.Point -> Model -> Model
+updateMouseClick clicked point model =
+    let
+        transform = model.transform
+    in
+        { model
+        | transform =
+            { transform
+            | mouseClicked = clicked
+            , prevPos = Debug.log "point" point
+            }
+        }
+
+
+updateModelScale : Zoom -> Model -> Model
+updateModelScale zoom model =
+    let
+        modeltrans = model.transform
+        prevScale = model.transform.scale
+        factor =
+            case zoom of
+                In -> zoomFactor
+                Out -> (negate zoomFactor)
+    in
+        { model
+        | transform =
+            { modeltrans
+            | scale = prevScale + factor
+            }
+        }
+
+
+
+updateModelTranslate : Float -> Float -> Model -> Model
+updateModelTranslate newX newY model =
+    let
+        modeltrans = model.transform
+        { x, y } = (model.transform.prevPos)
+        updatedX = newX - x
+        updatedY = newY - y
+        updatedModel =
+            { model
+            | transform =
+                { modeltrans
+                | translate = ( PointSpace.Point updatedX updatedY )
+                , prevPos = PointSpace.Point x y
+                }
+            }
+    in
+        if model.transform.mouseClicked then
+            updatedModel
+        else
+            model
+
 
 
 
@@ -246,6 +366,10 @@ viewCommandUpdate model =
         , br [] []
         , button [ onClick NextIter] [ text "Next" ]
         , button [ onClick Reset ] [text "Reset"]
+        , br [] []
+        , text "Zoom : "
+        , button [ onClick (Scale In) ] [ text "+" ]
+        , button [ onClick (Scale Out) ] [text "-"]
         ]
 
 
@@ -268,13 +392,41 @@ viewDrawing model =
     in
         Canvas.toHtml
             (size, size)
-            []
+            [ (onMouseDrag Translate)
+            , onMyMouseUp (MouseClick False)
+            , onMyMouseDown (MouseClick True)
+            ]
             [ shapes
                 [ fill Color.black ]
                 [ Canvas.rect (0,0) (toFloat size) (toFloat size) ]
             , shapes
                 [ fill Color.black
                 , stroke Color.white
+                , transform (modelTransformToList model.transform)
+                , lineWidth (1 / model.transform.scale)
                 ]
                 ( linesToShape ( model.drawing.lines ) )
             ]
+
+onMyMouseDown : (Float -> Float -> msg) -> Attribute msg
+onMyMouseDown f =
+    on "mousedown" (mouseMoveDecoder f)
+
+onMyMouseUp : (Float -> Float -> msg) -> Attribute msg
+onMyMouseUp f =
+    on "mouseup" (mouseMoveDecoder f)
+
+onMouseDrag : (Float -> Float -> msg) -> Attribute msg
+onMouseDrag f =
+    on "mousemove" (mouseMoveDecoder f)
+
+mouseMoveDecoder : (Float -> Float -> msg) -> Json.Decoder msg
+mouseMoveDecoder f =
+    Json.map2 f
+        (Json.field "offsetX" Json.float)
+        (Json.field "offsetY" Json.float)
+
+
+onKeyPressed : (Int -> msg) -> Attribute msg
+onKeyPressed func =
+    on "keypress" (Json.map func keyCode)
