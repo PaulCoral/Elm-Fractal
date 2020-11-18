@@ -28,8 +28,8 @@ jobs:
       - name : compile elm code
         run: |
           mkdir public/
-          elm make src/Main.elm --optimize
-          mv index.html public/
+          ./elm-compile.sh
+          mv elm.js public/
         
       - name : Deploy to GitHub Pages
         if: success()
