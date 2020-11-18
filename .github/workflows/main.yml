@@ -28,7 +28,9 @@ jobs:
       - name : compile elm code
         run: |
           mkdir public/
-          elm make src/Main.elm --optimize
+          chmod u+x elm-compile.sh
+          ./elm-compile.sh
+          mv elm.js public/
           mv index.html public/
         
       - name : Deploy to GitHub Pages
