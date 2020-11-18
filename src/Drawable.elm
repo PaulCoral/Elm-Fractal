@@ -1,7 +1,7 @@
 module Drawable exposing (..)
 
-import Svg exposing (..)
-import Svg.Attributes exposing (..)
+import Canvas
+import Canvas.Settings
 
 import FracPattern exposing (..)
 import PointSpace exposing (..)
@@ -51,56 +51,33 @@ initialPoint = Point 0 (initLineLength / 2)
 {-| Size of the line drawn at Iteration 0
 -}
 initLineLength : Float
-initLineLength = 900
+initLineLength = 800
 
 
-{-| The style that will be applied to every line
+{-| Create a Canvas pathSegment from Lines
 -}
-lineStyle : List (Attribute msg)
-lineStyle =
-    [ fill "black"
-    , stroke "black"
-    , strokeWidth "1"
-    ]
-
-
-{-| Create a Svg line from a line
--}
-lineToSvgLine : Line -> Svg msg
-lineToSvgLine l =
-    let
-        (pt1, pt2) = l
-        startX = String.fromFloat pt1.x
-        startY = String.fromFloat pt1.y
-        endX = String.fromFloat pt2.x
-        endY = String.fromFloat pt2.y
-    in
-        line
-            ([ x1 startX
-            , y1 startY
-            , x2 endX
-            , y2 endY
-            ] ++ lineStyle)
-            []
-
-
-{-| Create a sequence of Svg lines from a sequence of Lines
--}
-linesToSvgLines : Lines -> List (Svg msg)
-linesToSvgLines lines =
-    linesToSvgLinesRec lines []
-
-
-{-| Create a sequence of Svg lines from a sequence of Lines.
-Recursive implementation. Takes an accumulator.
--}
-linesToSvgLinesRec : Lines -> List(Svg msg) -> List (Svg msg)
-linesToSvgLinesRec lines acc =
+linesToShapeRec : Lines -> List Canvas.Shape -> List Canvas.Shape
+linesToShapeRec lines acc =
     case lines of
         [] -> acc
-        line :: rest ->
-            linesToSvgLinesRec rest ((lineToSvgLine line) :: acc)
+        (p1, p2) :: xs ->
+            let
+                start = pointToCanvasPoint p1
+                end = pointToCanvasPoint p2
+                line =
+                    (Canvas.path
+                        start
+                        [ Canvas.lineTo end ]
+                    ) :: acc
+            in
+                linesToShapeRec xs line
 
+
+{-| Create a sequence of Canvas lines from a sequence of Lines
+-}
+linesToShape : Lines -> List Canvas.Shape
+linesToShape lines =
+    linesToShapeRec lines []
 
 
 {-| Take DrawingState Return the lines after an iteration

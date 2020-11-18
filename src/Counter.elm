@@ -25,4 +25,4 @@ setCounter counter enabled =
 
 
 timeInterval : Float
-timeInterval = 1500
+timeInterval = 1000

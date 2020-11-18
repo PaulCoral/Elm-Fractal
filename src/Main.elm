@@ -4,8 +4,9 @@ import Browser
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
-import Svg exposing (svg)
-import Svg.Attributes
+import Canvas exposing (shapes)
+import Canvas.Settings exposing (fill,stroke)
+import Color
 import Time exposing (..)
 
 import FracPattern exposing (..)
@@ -137,7 +138,7 @@ subscriptions model =
          hasNext = (c.isEnabled && (i <= c.upTo))
     in
         if hasNext then
-            Time.every 1500 (\_ -> NextIter)
+            Time.every Counter.timeInterval (\_ -> NextIter)
         else
             Sub.none
 
@@ -151,16 +152,28 @@ subscriptions model =
 view : Model -> Html Msg
 view model =
     div
-        []
-        [ h1 [] [text "Elm Fractal"]
-        , p []
+        [ style "display" "flex"
+        , style "width" "100%"
+        , style "font-family" "sans-serif"
+        ]
+        [ viewText model
+        , viewDrawing model
+        ]
+
+viewText : Model -> Html Msg
+viewText model =
+    div
+        [ style "margin" "3em" ]
+        [ h1
+            []
+            [ text "Elm Fractal" ]
+        , p
+            []
             [ text "Have a look at my "
             , a [ href "https://github.com/lepaincestbon/Elm-Fractal" ] [ text "GitHub Repo" ]
             ]
         , viewCommand model
-        , viewDrawing model
         ]
-
 
 {-| Return the appropriate UI to display
 -}
@@ -229,7 +242,7 @@ viewCommandUpdate model =
         , br [] []
         , text ("Number of iterations : " ++ (String.fromInt model.nbIterations))
         , br [] []
-        , text ("Number of drawn lines :" ++ (String.fromInt (List.length (linesToSvgLines (model.drawing.lines)))))
+        , text ("Number of drawn lines :" ++ (String.fromInt (List.length (model.drawing.lines))))
         , br [] []
         , button [ onClick NextIter] [ text "Next" ]
         , button [ onClick Reset ] [text "Reset"]
@@ -251,12 +264,21 @@ updatePatternModelForm model s =
 viewDrawing : Model -> Html Msg
 viewDrawing model =
     let
-        sizeString = String.fromFloat initLineLength
+        size = round initLineLength
+        lines = linesToShape ( model.drawing.lines )
+        length = Debug.log "Length" (lines)
+        width = size
+        height = size
     in
-    svg
-        [ Svg.Attributes.viewBox ("0 0 " ++ sizeString ++ " " ++ sizeString)
-        , Svg.Attributes.width sizeString
-        , Svg.Attributes.height sizeString
-        ]
-        (linesToSvgLines (model.drawing.lines))
-
+        Canvas.toHtml
+            (size, size)
+            []
+            [ shapes
+                [ fill Color.black ]
+                [ Canvas.rect (0,0) (toFloat size) (toFloat size) ]
+            , shapes
+                [ fill Color.black
+                , stroke Color.white
+                ]
+                ( linesToShape ( model.drawing.lines ) )
+            ]
