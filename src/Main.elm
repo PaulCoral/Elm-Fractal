@@ -265,10 +265,6 @@ viewDrawing : Model -> Html Msg
 viewDrawing model =
     let
         size = round initLineLength
-        lines = linesToShape ( model.drawing.lines )
-        length = Debug.log "Length" (lines)
-        width = size
-        height = size
     in
         Canvas.toHtml
             (size, size)

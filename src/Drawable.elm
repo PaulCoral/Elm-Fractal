@@ -1,7 +1,6 @@
 module Drawable exposing (..)
 
 import Canvas
-import Canvas.Settings
 
 import FracPattern exposing (..)
 import PointSpace exposing (..)

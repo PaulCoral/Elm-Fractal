@@ -1,9 +1,6 @@
 module Counter exposing (..)
 
-import Time
-
 {-| A counter to evolve the fractal
-
 -}
 type alias Counter =
     { upTo : Int
