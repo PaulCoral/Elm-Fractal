@@ -66,7 +66,7 @@ type alias ModelTransform =
 type Zoom = In | Out
 
 zoomFactor : Float
-zoomFactor = 1 / 10
+zoomFactor = 1
 
 
 {-| initialization function
