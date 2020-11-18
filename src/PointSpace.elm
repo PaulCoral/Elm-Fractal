@@ -1,5 +1,7 @@
 module PointSpace exposing (..)
 
+import Canvas
+
 import FracPattern exposing (..)
 
 
@@ -37,6 +39,12 @@ pointMultByScalar p s =
 pointNeg : Point -> Point
 pointNeg p =
     Point -p.x -p.y
+
+
+pointToCanvasPoint : Point -> Canvas.Point
+pointToCanvasPoint p =
+    case p of
+        {x,y} -> (x,y)
 
 
 

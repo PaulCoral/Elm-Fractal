@@ -1,9 +1,6 @@
 module Counter exposing (..)
 
-import Time
-
 {-| A counter to evolve the fractal
-
 -}
 type alias Counter =
     { upTo : Int
@@ -25,4 +22,4 @@ setCounter counter enabled =
 
 
 timeInterval : Float
-timeInterval = 1500
+timeInterval = 1000

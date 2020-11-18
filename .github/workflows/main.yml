@@ -28,6 +28,7 @@ jobs:
       - name : compile elm code
         run: |
           mkdir public/
+          chmod u+x elm-compile.sh
           ./elm-compile.sh
           mv elm.js public/
           mv index.html public/
