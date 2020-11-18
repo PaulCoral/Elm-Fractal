@@ -30,6 +30,7 @@ jobs:
           mkdir public/
           ./elm-compile.sh
           mv elm.js public/
+          mv index.html public/
         
       - name : Deploy to GitHub Pages
         if: success()
