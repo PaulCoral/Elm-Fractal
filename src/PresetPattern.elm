@@ -13,6 +13,8 @@ presetList =
     , Preset "Cool Cube" (anglesToString [0,90,-90,-90,90])
     , Preset "Many Cubes" (anglesToString [0,90,90,90])
     , Preset "Fibonacci" (anglesToString (fibonacciList 3 9))
+    , Preset "+Fibonacci" (anglesToString (fibonacciList 6 12))
+    , Preset "++Fibonacci" (anglesToString (fibonacciList 9 15))
     ]
 
 
