@@ -195,12 +195,13 @@ updateMouseClick : Bool -> PointSpace.Point -> Model -> Model
 updateMouseClick clicked point model =
     let
         transform = model.transform
+        prevPos = transform.prevPos
     in
         { model
         | transform =
             { transform
             | mouseClicked = clicked
-            , prevPos = Debug.log "point" point
+            , prevPos = if clicked then point else prevPos
             }
         }
 
@@ -228,15 +229,16 @@ updateModelTranslate : Float -> Float -> Model -> Model
 updateModelTranslate newX newY model =
     let
         modeltrans = model.transform
-        { x, y } = (model.transform.prevPos)
-        updatedX = newX - x
-        updatedY = newY - y
+        translate = (modeltrans.translate)
+        prevPos = (modeltrans.prevPos)
+        updatedX = translate.x + newX - prevPos.x
+        updatedY = translate.y + newY - prevPos.y
         updatedModel =
             { model
             | transform =
                 { modeltrans
                 | translate = ( PointSpace.Point updatedX updatedY )
-                , prevPos = PointSpace.Point x y
+                , prevPos = PointSpace.Point newX newY
                 }
             }
     in
@@ -392,9 +394,10 @@ viewDrawing model =
     in
         Canvas.toHtml
             (size, size)
-            [ (onMouseDrag Translate)
+            [ onMouseMove Translate
             , onMyMouseUp (MouseClick False)
             , onMyMouseDown (MouseClick True)
+            , onMouseOut (MouseClick False 0 0)
             ]
             [ shapes
                 [ fill Color.black ]
@@ -416,8 +419,8 @@ onMyMouseUp : (Float -> Float -> msg) -> Attribute msg
 onMyMouseUp f =
     on "mouseup" (mouseMoveDecoder f)
 
-onMouseDrag : (Float -> Float -> msg) -> Attribute msg
-onMouseDrag f =
+onMouseMove : (Float -> Float -> msg) -> Attribute msg
+onMouseMove f =
     on "mousemove" (mouseMoveDecoder f)
 
 mouseMoveDecoder : (Float -> Float -> msg) -> Json.Decoder msg
