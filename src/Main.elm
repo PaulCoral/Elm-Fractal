@@ -345,7 +345,7 @@ viewText model =
         , p
             []
             [ text "Have a look at my "
-            , a [ href "https://github.com/lepaincestbon/Elm-Fractal" ] [ text "GitHub Repo" ]
+            , a [ href "https://github.com/PaulCoral/Elm-Fractal" ] [ text "GitHub Repo" ]
             ]
         , viewCommand model
         ]
