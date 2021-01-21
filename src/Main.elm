@@ -12,6 +12,7 @@ import Canvas.Settings.Line exposing (lineWidth)
 import Color
 import Time exposing (..)
 import Json.Decode as Json
+import Random exposing (..)
 
 import FracPattern exposing (..)
 import Drawable exposing (..)
@@ -136,6 +137,8 @@ type Msg
     | Scale Zoom
     | Translate Float Float
     | MouseClick Bool Float Float
+    | GeneratePresets
+    | RandomPresets Angles
     | None
 
 
@@ -187,6 +190,21 @@ update msg model =
                 model
             , Cmd.none
             )
+
+        GeneratePresets ->
+            ( model
+            , Random.generate RandomPresets (Random.list 6 (Random.float -180 180))
+            )
+
+        RandomPresets ls ->
+            let
+                trunc = (List.map (\f -> ( toFloat ( truncate f ) ) ) ls )
+                modelform = model.form
+                newModelform = { modelform | pattern = (anglesToString trunc) }
+                newModel =  { model | form = newModelform }
+            in
+            (newModel, Cmd.none)
+
         None -> (model, Cmd.none)
 
 
@@ -323,6 +341,7 @@ viewCommandInit model =
                 []
             , br [] []
             , viewCommandPreset model
+            , button [ onClick GeneratePresets ] [ text "Random" ]
             , br [] []
             , text "Animated ?"
             , input
@@ -345,14 +364,17 @@ viewCommandPreset : Model -> Html Msg
 viewCommandPreset model =
     let
        form = model.form
+       options =
+           (option [ value form.pattern ] [text "Custom"])
+               :: (List.map
+                       (\preset ->
+                           option [ value preset.pattern ] [text preset.name]
+                       )
+                       (presetList))
     in
-        select [ onInput (\s ->( UpdateForm ({form | pattern = s }))) ]
-            (  (option [ value form.pattern ] [text "Custom"])
-            :: (List.map
-                (\preset ->
-                    option [ value preset.pattern ] [text preset.name]
-                )
-                presetList))
+        select
+            [ onInput (\s ->( UpdateForm ( { form | pattern = s } ) ) ) ]
+            options
 
 
 {-| The UI to update application state
@@ -415,13 +437,16 @@ onMyMouseDown : (Float -> Float -> msg) -> Attribute msg
 onMyMouseDown f =
     on "mousedown" (mouseMoveDecoder f)
 
+
 onMyMouseUp : (Float -> Float -> msg) -> Attribute msg
 onMyMouseUp f =
     on "mouseup" (mouseMoveDecoder f)
 
+
 onMouseMove : (Float -> Float -> msg) -> Attribute msg
 onMouseMove f =
     on "mousemove" (mouseMoveDecoder f)
+
 
 mouseMoveDecoder : (Float -> Float -> msg) -> Json.Decoder msg
 mouseMoveDecoder f =

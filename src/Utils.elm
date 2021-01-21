@@ -1,4 +1,4 @@
-module Utils exposing (..)
+module Utils exposing (listFlatMap)
 
 
 {-| Perform a flatMap with the given function on the given list
