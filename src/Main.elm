@@ -53,6 +53,7 @@ type alias Model =
 -}
 type alias ModelForm =
     { pattern : String
+    , randomSize : Int
     , counterIsSet : Bool
     }
 
@@ -89,7 +90,7 @@ defaultFormPatternText = ""
 
 
 initModelForm : ModelForm
-initModelForm = (ModelForm defaultFormPatternText initCounter.isEnabled)
+initModelForm = (ModelForm defaultFormPatternText 6 initCounter.isEnabled )
 
 
 initModelTransform : ModelTransform
@@ -193,7 +194,12 @@ update msg model =
 
         GeneratePresets ->
             ( model
-            , Random.generate RandomPresets (Random.list 6 (Random.float -180 180))
+            , Random.generate
+                RandomPresets
+                (Random.list
+                    model.form.randomSize
+                    (Random.float -180 180)
+                )
             )
 
         RandomPresets ls ->
@@ -341,6 +347,15 @@ viewCommandInit model =
                 []
             , br [] []
             , viewCommandPreset model
+            , br [] []
+            , text "Random : size = "
+            , input
+                [ type_ "number"
+                , value (String.fromInt form.randomSize )
+                , onInput (updateRandomSizeModelForm model)
+                , size 1
+                ]
+                []
             , button [ onClick GeneratePresets ] [ text "Random" ]
             , br [] []
             , text "Animated ?"
@@ -396,6 +411,19 @@ viewCommandUpdate model =
         , button [ onClick (Scale Out) ] [text "-"]
         ]
 
+
+{-| Create Msg to update `ModelForm.pattern` from String
+-}
+updateRandomSizeModelForm : Model -> String -> Msg
+updateRandomSizeModelForm model maybeSize =
+    let
+        prevForm = model.form
+        size =
+            case (String.toInt maybeSize) of
+                Just i -> i
+                Nothing -> 6
+    in
+        UpdateForm { prevForm | randomSize = size }
 
 {-| Create Msg to update `ModelForm.pattern` from String
 -}
