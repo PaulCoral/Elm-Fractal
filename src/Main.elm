@@ -508,6 +508,7 @@ viewDrawing model =
         , onMyMouseUp (MouseClick False)
         , onMyMouseDown (MouseClick True)
         , onMouseOut (MouseClick False 0 0)
+        , style "cursor" "grab"
         ]
         [ shapes
             [ fill Color.black ]
