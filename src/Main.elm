@@ -427,22 +427,6 @@ viewCommandInit model =
         , br [] []
         , button [onClick Draw] [text "Enter"]
         , button [ onClick Reset ] [text "Reset"]
-        , br [] []
-        , viewCommandPreset model
-        , br [] []
-        , text "Animated ?"
-        , input
-            [ type_ "checkbox"
-            , checked model.form.counterIsSet
-            , onCheck
-                (\bool ->
-                    UpdateForm { form | counterIsSet = bool }
-                )
-            ]
-            []
-        , br [] []
-        , button [ onClick Draw ] [ text "Enter" ]
-        , button [ onClick Reset ] [ text "Reset" ]
         ]
 
 
