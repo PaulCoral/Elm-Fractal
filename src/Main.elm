@@ -13,12 +13,9 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Json.Decode as Json
-
-import Random exposing (..)
-import FracPattern exposing (..)
-import Drawable exposing (..)
 import PointSpace
 import PresetPattern exposing (presetList)
+import Random exposing (..)
 import Time exposing (..)
 
 
@@ -99,7 +96,8 @@ defaultFormPatternText =
 
 
 initModelForm : ModelForm
-initModelForm = ModelForm defaultFormPatternText 6 initCounter.isEnabled
+initModelForm =
+    ModelForm defaultFormPatternText 6 initCounter.isEnabled
 
 
 initModelTransform : ModelTransform
@@ -226,15 +224,22 @@ update msg model =
 
         RandomPresets ls ->
             let
-                trunc = (List.map (\f -> ( toFloat ( truncate f ) ) ) ls )
-                modelform = model.form
-                newModelform = { modelform | pattern = (anglesToString trunc) }
-                newModel =  { model | form = newModelform }
+                trunc =
+                    List.map (\f -> toFloat (truncate f)) ls
+
+                modelform =
+                    model.form
+
+                newModelform =
+                    { modelform | pattern = anglesToString trunc }
+
+                newModel =
+                    { model | form = newModelform }
             in
-            (newModel, Cmd.none)
+            ( newModel, Cmd.none )
 
         None ->
-            (model, Cmd.none)
+            ( model, Cmd.none )
 
 
 updateMouseClick : Bool -> PointSpace.Point -> Model -> Model
@@ -408,7 +413,7 @@ viewCommandInit model =
         , text "Random : size = "
         , input
             [ type_ "number"
-            , value (String.fromInt form.randomSize )
+            , value (String.fromInt form.randomSize)
             , onInput (updateRandomSizeModelForm model)
             , size 1
             ]
@@ -421,12 +426,13 @@ viewCommandInit model =
             , checked model.form.counterIsSet
             , onCheck
                 (\bool ->
-                    (UpdateForm {form | counterIsSet = bool}))
+                    UpdateForm { form | counterIsSet = bool }
+                )
             ]
             []
         , br [] []
-        , button [onClick Draw] [text "Enter"]
-        , button [ onClick Reset ] [text "Reset"]
+        , button [ onClick Draw ] [ text "Enter" ]
+        , button [ onClick Reset ] [ text "Reset" ]
         ]
 
 
@@ -435,19 +441,20 @@ viewCommandInit model =
 viewCommandPreset : Model -> Html Msg
 viewCommandPreset model =
     let
-       form = model.form
-       options =
-           (option [ value form.pattern ] [text "Custom"])
-               :: (List.map
-                       (\preset ->
-                           option [ value preset.pattern ] [text preset.name]
-                       )
-                       (presetList))
-    in
-        select
-            [ onInput (\s ->( UpdateForm ( { form | pattern = s } ) ) ) ]
-            options
+        form =
+            model.form
 
+        options =
+            option [ value form.pattern ] [ text "Custom" ]
+                :: List.map
+                    (\preset ->
+                        option [ value preset.pattern ] [ text preset.name ]
+                    )
+                    presetList
+    in
+    select
+        [ onInput (\s -> UpdateForm { form | pattern = s }) ]
+        options
 
 
 {-| The UI to update application state
@@ -475,13 +482,19 @@ viewCommandUpdate model =
 updateRandomSizeModelForm : Model -> String -> Msg
 updateRandomSizeModelForm model maybeSize =
     let
-        prevForm = model.form
+        prevForm =
+            model.form
+
         size =
-            case (String.toInt maybeSize) of
-                Just i -> i
-                Nothing -> 6
+            case String.toInt maybeSize of
+                Just i ->
+                    i
+
+                Nothing ->
+                    6
     in
-        UpdateForm { prevForm | randomSize = size }
+    UpdateForm { prevForm | randomSize = size }
+
 
 {-| Create Msg to update `ModelForm.pattern` from String
 -}
